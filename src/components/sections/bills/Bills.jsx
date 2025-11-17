@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Plus, Users, Trash, Calendar, Check } from '@phosphor-icons/react';
+import { Plus, Users, Trash, Calendar, Check, PencilSimple } from '@phosphor-icons/react';
 import Button from '../../ui/button/Button.jsx';
 import { useApi } from '../../../hooks/useApi.js';
 import './Bills.css';
@@ -23,6 +23,7 @@ export default function Bills() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [editingBill, setEditingBill] = useState(null);
 
   const fetchBills = useCallback(() => {
     setLoading(true);
@@ -62,31 +63,73 @@ export default function Bills() {
     try {
       const validParticipants = participants
         .filter((p) => p.name && p.share)
-        .map((p) => ({ name: p.name, share: Number(p.share) }));
+        .map((p) => ({ 
+          name: p.name, 
+          share: Number(p.share),
+          settled: p.settled || false
+        }));
 
       if (validParticipants.length === 0) {
         setError('Add at least one participant');
         return;
       }
 
-      await request('/bills', {
-        method: 'POST',
-        body: {
-          description: form.description,
-          total: Number(form.total),
-          participants: validParticipants,
-          dueDate: form.dueDate || undefined,
-        },
-      });
+      const payload = {
+        description: form.description,
+        total: Number(form.total),
+        participants: validParticipants,
+        dueDate: form.dueDate || undefined,
+      };
+
+      if (editingBill) {
+        // Update existing bill
+        await request(`/bills/${editingBill._id}`, {
+          method: 'PUT',
+          body: payload,
+        });
+      } else {
+        // Create new bill
+        await request('/bills', {
+          method: 'POST',
+          body: payload,
+        });
+      }
       
       setForm(defaultBill);
       setParticipants([{ name: '', share: '' }, { name: '', share: '' }]);
       setShowForm(false);
+      setEditingBill(null);
       setError(null);
       fetchBills();
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const handleEdit = (bill) => {
+    setEditingBill(bill);
+    setForm({
+      description: bill.description,
+      total: bill.total.toString(),
+      dueDate: bill.dueDate ? new Date(bill.dueDate).toISOString().split('T')[0] : '',
+    });
+    setParticipants(
+      bill.participants.map((p) => ({
+        name: p.name,
+        share: p.share.toString(),
+        settled: p.settled,
+      }))
+    );
+    setShowForm(true);
+    setError(null);
+  };
+
+  const handleCancelEdit = () => {
+    setForm(defaultBill);
+    setParticipants([{ name: '', share: '' }, { name: '', share: '' }]);
+    setShowForm(false);
+    setEditingBill(null);
+    setError(null);
   };
 
   const handleDelete = async (id) => {
@@ -123,7 +166,7 @@ export default function Bills() {
 
       {showForm && (
         <div className="bills__form-card">
-          <h3>New Bill</h3>
+          <h3>{editingBill ? 'Edit Bill' : 'New Bill'}</h3>
           <form onSubmit={handleSubmit} className="bill-form">
             <div className="form-row">
               <label className="form-field">
@@ -187,6 +230,16 @@ export default function Bills() {
                     onChange={(e) => handleParticipantChange(index, 'share', e.target.value)}
                     required
                   />
+                  {editingBill && (
+                    <label className="settled-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={participant.settled || false}
+                        onChange={(e) => handleParticipantChange(index, 'settled', e.target.checked)}
+                      />
+                      <span>Settled</span>
+                    </label>
+                  )}
                   {participants.length > 1 && (
                     <button
                       type="button"
@@ -201,10 +254,12 @@ export default function Bills() {
             </div>
 
             <div className="form-actions">
-              <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>
+              <Button type="button" variant="ghost" onClick={handleCancelEdit}>
                 Cancel
               </Button>
-              <Button type="submit">Create Bill</Button>
+              <Button type="submit">
+                {editingBill ? 'Update Bill' : 'Create Bill'}
+              </Button>
             </div>
           </form>
         </div>
@@ -261,9 +316,14 @@ export default function Bills() {
                       {bill.status}
                     </span>
                   </div>
-                  <button className="delete-btn" onClick={() => handleDelete(bill._id)}>
-                    <Trash size={18} weight="bold" />
-                  </button>
+                  <div className="bill-card__actions">
+                    <button className="edit-btn" onClick={() => handleEdit(bill)}>
+                      <PencilSimple size={18} weight="bold" />
+                    </button>
+                    <button className="delete-btn" onClick={() => handleDelete(bill._id)}>
+                      <Trash size={18} weight="bold" />
+                    </button>
+                  </div>
                 </div>
                 <div className="bill-card__details">
                   <p className="bill-total">Total: ₹{bill.total.toFixed(2)}</p>

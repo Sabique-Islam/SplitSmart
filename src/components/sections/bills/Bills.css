@@ -128,10 +128,34 @@
 
 .participant-row {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr auto auto;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   align-items: center;
+}
+
+.settled-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.settled-checkbox input[type="checkbox"] {
+  cursor: pointer;
+  width: 1rem;
+  height: 1rem;
+}
+
+.settled-checkbox:hover {
+  border-color: var(--primary);
 }
 
 .participant-row input {
@@ -312,6 +336,29 @@
   border: 1px solid var(--success);
 }
 
+.bill-card__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--primary);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-btn:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+}
+
 .delete-btn {
   padding: 0.5rem;
   background: transparent;
@@ -436,6 +483,11 @@
 
   .participant-row {
     grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .settled-checkbox {
+    justify-content: center;
   }
 
   .remove-btn {

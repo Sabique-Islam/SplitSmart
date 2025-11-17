@@ -13,7 +13,6 @@ import billRoutes from './routes/billRoutes.js';
 import savingsRoutes from './routes/savingsRoutes.js';
 import transactionRoutes from './routes/transactionRoutes.js';
 import insightRoutes from './routes/insightRoutes.js';
-import notificationRoutes from './routes/notificationRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 
 const app = express();
@@ -33,8 +32,6 @@ app.use('/api/expenses', expenseRoutes);
 app.use('/api/bills', billRoutes);
 app.use('/api/savings', savingsRoutes);
 app.use('/api/transactions', transactionRoutes);
-app.use('/api/insights', insightRoutes);
-app.use('/api/notifications', notificationRoutes);
 app.use('/api/profile', profileRoutes);
 
 app.use(errorHandler);

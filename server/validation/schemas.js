@@ -57,6 +57,23 @@ export const billSettleSchema = z.object({
   participantId: z.string(),
 });
 
+export const billUpdateSchema = z.object({
+  description: z.string().optional(),
+  total: z.number().positive().optional(),
+  participants: z
+    .array(
+      z.object({
+        userId: z.string().optional(),
+        name: z.string(),
+        share: z.number().positive(),
+        settled: z.boolean().optional(),
+      })
+    )
+    .min(1)
+    .optional(),
+  dueDate: z.string().optional(),
+});
+
 export const billReminderSchema = z.object({
   message: z.string().max(280).optional(),
 });

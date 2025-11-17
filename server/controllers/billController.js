@@ -4,7 +4,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { Bill } from '../models/Bill.js';
 import { Notification } from '../models/Notification.js';
 import { HttpError } from '../utils/httpError.js';
-import { billSchema, billSettleSchema, billReminderSchema } from '../validation/schemas.js';
+import { billSchema, billSettleSchema, billUpdateSchema, billReminderSchema } from '../validation/schemas.js';
 
 const { Types } = mongoose;
 
@@ -52,6 +52,54 @@ export const createBill = asyncHandler(async (req, res) => {
   });
 
   res.status(201).json({ bill: hydrateStatus(bill) });
+});
+
+export const updateBill = asyncHandler(async (req, res) => {
+  const bill = await Bill.findById(req.params.id);
+  if (!bill) throw new HttpError(404, 'Bill not found');
+
+  const payload = billUpdateSchema.parse({
+    ...req.body,
+    total: req.body.total ? Number(req.body.total) : undefined,
+    participants: req.body.participants ? (req.body.participants || []).map((p) => ({
+      ...p,
+      share: Number(p.share),
+    })) : undefined,
+  });
+
+  // Validate that shares equal total if both are provided
+  if (payload.participants || payload.total) {
+    const newTotal = payload.total || bill.total;
+    const newParticipants = payload.participants || bill.participants;
+    const totalShares = newParticipants.reduce((acc, p) => acc + p.share, 0);
+    
+    if (Math.abs(totalShares - newTotal) > 0.01) {
+      throw new HttpError(400, 'Participant shares must equal total');
+    }
+  }
+
+  // Update bill fields
+  if (payload.description !== undefined) {
+    bill.description = payload.description;
+  }
+  if (payload.total !== undefined) {
+    bill.total = payload.total;
+  }
+  if (payload.participants !== undefined) {
+    bill.participants = payload.participants.map((p) => ({
+      userId: p.userId ? new Types.ObjectId(p.userId) : null,
+      name: p.name,
+      share: p.share,
+      settled: p.settled !== undefined ? p.settled : false,
+    }));
+  }
+  if (payload.dueDate !== undefined) {
+    bill.dueDate = payload.dueDate ? dayjs(payload.dueDate).toDate() : null;
+  }
+
+  await bill.save();
+
+  res.json({ bill: hydrateStatus(bill) });
 });
 
 export const settleShare = asyncHandler(async (req, res) => {
