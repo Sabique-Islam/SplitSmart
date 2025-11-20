@@ -1,25 +1,15 @@
 import mongoose from 'mongoose';
 
-const splitSchema = new mongoose.Schema(
-  {
-    participantId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
-    share: { type: Number, required: true },
-    settled: { type: Boolean, default: false },
-  },
-  { _id: false }
-);
-
 const expenseSchema = new mongoose.Schema(
   {
-    ownerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false, default: null },
-    title: { type: String, required: true },
-    amount: { type: Number, required: true },
+    title: String,
+    amount: Number,
     category: { type: String, default: 'general' },
-    type: { type: String, enum: ['personal', 'group'], default: 'personal' },
-    splitWith: { type: [splitSchema], default: [] },
+    type: { type: String, default: 'personal' },
+    splitWith: [{ participantName: String, share: Number, settled: Boolean }],
     date: { type: Date, default: Date.now },
-    notes: { type: String },
-    status: { type: String, enum: ['recorded', 'pending', 'reimbursed'], default: 'recorded' },
+    notes: String,
+    status: { type: String, default: 'recorded' },
   },
   { timestamps: true }
 );

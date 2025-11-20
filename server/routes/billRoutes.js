@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import { listBills, createBill, updateBill, settleShare, sendReminder, deleteBill } from '../controllers/billController.js';
+import * as c from '../controllers/billController.js';
 
 const router = Router();
 
-router.get('/', listBills);
-router.post('/', createBill);
-router.put('/:id', updateBill);
-router.patch('/:id/settle', settleShare);
-router.post('/:id/remind', sendReminder);
-router.delete('/:id', deleteBill);
+router.get('/', c.listBills);
+router.post('/', c.createBill);
+router.put('/:id', c.updateBill);
+router.patch('/:id/settle', c.settleShare);
+router.post('/:id/remind', c.sendReminder);
+router.delete('/:id', c.deleteBill);
 
 export default router;

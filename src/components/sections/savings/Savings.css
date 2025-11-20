@@ -25,7 +25,7 @@
 
 .savings__form-card {
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 2rem;
   border: 1px solid var(--border);
@@ -59,17 +59,11 @@
 .goal-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.goal-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .goal-card__header {
@@ -81,7 +75,7 @@
 .goal-card__icon {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
+  border-radius: 8px;
   background: var(--primary-light);
   color: var(--primary);
   display: flex;
@@ -95,8 +89,7 @@
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;

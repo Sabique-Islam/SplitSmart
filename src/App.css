@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--background);
 }
 
 .shell__main {
@@ -19,12 +19,13 @@
 }
 
 .sidebar {
-  background: linear-gradient(180deg, #0f172a, #1e293b);
+  background: var(--surface);
   color: white;
   padding: 2rem 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  border-right: 1px solid var(--border);
 }
 
 .sidebar__logo {
@@ -33,7 +34,7 @@
 }
 
 .sidebar__tagline {
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   margin-top: 0.5rem;
 }
 
@@ -47,17 +48,16 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.85rem 1rem;
-  border-radius: 0.85rem;
-  color: rgba(255, 255, 255, 0.7);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
-  transition: background 0.2s ease;
 }
 
 .sidebar__link--active,
 .sidebar__link:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--border);
   color: white;
 }
 
@@ -65,24 +65,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
 }
 
 .topbar__profile {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: white;
-  padding: 0.5rem 1rem;
-  border-radius: 999px;
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
 }
 
 .avatar {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: grid;
   place-items: center;
+  background: var(--primary);
   color: white;
   font-weight: 700;
 }

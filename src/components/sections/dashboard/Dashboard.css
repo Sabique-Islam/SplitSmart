@@ -27,23 +27,16 @@
 
 .stat-card {
   background: var(--surface);
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 1.5rem;
   display: flex;
   gap: 1rem;
   align-items: flex-start;
   border: 1px solid var(--border);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(249, 115, 22, 0.3);
-  border-color: var(--primary);
 }
 
 .stat-card--primary {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: var(--primary);
   color: white;
   border: none;
 }
@@ -51,7 +44,7 @@
 .stat-card__icon {
   width: 56px;
   height: 56px;
-  border-radius: 12px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;

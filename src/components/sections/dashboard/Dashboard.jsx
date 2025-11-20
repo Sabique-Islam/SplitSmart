@@ -25,42 +25,35 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // Fetch expenses
-      const expensesData = await request('/expenses');
+      const [expensesData, billsData, savingsData] = await Promise.all([
+        request('/expenses'),
+        request('/bills'),
+        request('/savings')
+      ]);
+
       const expenses = expensesData.expenses || [];
-      
-      // Fetch bills
-      const billsData = await request('/bills');
       const bills = billsData.bills || [];
-      
-      // Fetch savings
-      const savingsData = await request('/savings');
       const savings = savingsData.goals || [];
       
-      // Calculate totals
       const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-      const totalBills = bills.reduce((sum, bill) => sum + (bill.totalAmount || 0), 0);
+      const totalBills = bills.reduce((sum, bill) => sum + (bill.total || 0), 0);
       const totalSavings = savings.reduce((sum, goal) => sum + (goal.currentAmount || 0), 0);
       const savingsTarget = savings.reduce((sum, goal) => sum + (goal.targetAmount || 0), 0);
-      const savingsProgress = savingsTarget > 0 ? (totalSavings / savingsTarget) * 100 : 0;
       
       setStats({
         totalExpenses,
         totalBills,
         totalSavings,
-        savingsProgress,
+        savingsProgress: savingsTarget > 0 ? (totalSavings / savingsTarget) * 100 : 0,
         expenseCount: expenses.length,
         billCount: bills.length,
         savingsCount: savings.length
       });
       
-      // Set recent items
       setRecentExpenses(expenses.slice(0, 5));
       setRecentBills(bills.filter(b => b.status === 'open').slice(0, 5));
-      
     } catch (err) {
-      console.error('Error loading dashboard:', err);
+      console.error(err);
     } finally {
       setLoading(false);
     }

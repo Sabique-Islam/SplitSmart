@@ -4,9 +4,7 @@
   justify-content: space-between;
   background: var(--surface);
   padding: 1.5rem 2rem;
-  border-radius: var(--radius-xl);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 2rem;
 }
 
@@ -15,10 +13,6 @@
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
-  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .topbar p {
@@ -30,22 +24,19 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.625rem 1.25rem 0.625rem 0.625rem;
-  background: var(--primary-light);
-  border-radius: var(--radius-full);
-  border: 1px solid rgba(249, 115, 22, 0.2);
+  padding: 0.5rem;
 }
 
 .avatar {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
   font-weight: 600;
-  background: linear-gradient(135deg, var(--primary) 0%, #ec4899 100%);
+  background: var(--primary);
   color: white;
   flex-shrink: 0;
 }
@@ -75,6 +66,6 @@
   
   .topbar__profile {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
   }
 }

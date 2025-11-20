@@ -1,155 +1,36 @@
-import dayjs from 'dayjs';
-import mongoose from 'mongoose';
-import { asyncHandler } from '../utils/asyncHandler.js';
 import { Bill } from '../models/Bill.js';
-import { Notification } from '../models/Notification.js';
-import { HttpError } from '../utils/httpError.js';
-import { billSchema, billSettleSchema, billUpdateSchema, billReminderSchema } from '../validation/schemas.js';
 
-const { Types } = mongoose;
+export const listBills = async (req, res) => {
+  const bills = await Bill.find({}).sort({ dueDate: 1 });
+  res.json({ bills });
+};
 
-const hydrateStatus = (bill) => ({
-  ...bill.toObject(),
-  status: bill.participants.every((p) => p.settled) ? 'settled' : 'open',
-});
+export const createBill = async (req, res) => {
+  const bill = await Bill.create(req.body);
+  res.status(201).json({ bill });
+};
 
-export const listBills = asyncHandler(async (req, res) => {
-  const filter = {};
-  const bills = await Bill.find(filter).sort({ dueDate: 1 });
-  const statusFilter = req.query.status;
-  const data = bills
-    .map(hydrateStatus)
-    .filter((bill) => (statusFilter ? bill.status === statusFilter : true));
-  res.json({ bills: data });
-});
+export const updateBill = async (req, res) => {
+  const bill = await Bill.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json({ bill });
+};
 
-export const createBill = asyncHandler(async (req, res) => {
-  const payload = billSchema.parse({
-    ...req.body,
-    total: Number(req.body.total),
-    participants: (req.body.participants || []).map((p) => ({
-      ...p,
-      share: Number(p.share),
-    })),
-  });
-
-  const totalShares = payload.participants.reduce((acc, p) => acc + p.share, 0);
-  if (Math.abs(totalShares - payload.total) > 0.01) {
-    throw new HttpError(400, 'Participant shares must equal total');
-  }
-
-  const bill = await Bill.create({
-    creatorId: null,
-    description: payload.description,
-    total: payload.total,
-    participants: payload.participants.map((p) => ({
-      userId: p.userId ? new Types.ObjectId(p.userId) : null,
-      name: p.name,
-      share: p.share,
-      settled: false,
-    })),
-    dueDate: payload.dueDate ? dayjs(payload.dueDate).toDate() : undefined,
-  });
-
-  res.status(201).json({ bill: hydrateStatus(bill) });
-});
-
-export const updateBill = asyncHandler(async (req, res) => {
+export const settleShare = async (req, res) => {
   const bill = await Bill.findById(req.params.id);
-  if (!bill) throw new HttpError(404, 'Bill not found');
-
-  const payload = billUpdateSchema.parse({
-    ...req.body,
-    total: req.body.total ? Number(req.body.total) : undefined,
-    participants: req.body.participants ? (req.body.participants || []).map((p) => ({
-      ...p,
-      share: Number(p.share),
-    })) : undefined,
-  });
-
-  // Validate that shares equal total if both are provided
-  if (payload.participants || payload.total) {
-    const newTotal = payload.total || bill.total;
-    const newParticipants = payload.participants || bill.participants;
-    const totalShares = newParticipants.reduce((acc, p) => acc + p.share, 0);
-    
-    if (Math.abs(totalShares - newTotal) > 0.01) {
-      throw new HttpError(400, 'Participant shares must equal total');
-    }
-  }
-
-  // Update bill fields
-  if (payload.description !== undefined) {
-    bill.description = payload.description;
-  }
-  if (payload.total !== undefined) {
-    bill.total = payload.total;
-  }
-  if (payload.participants !== undefined) {
-    bill.participants = payload.participants.map((p) => ({
-      userId: p.userId ? new Types.ObjectId(p.userId) : null,
-      name: p.name,
-      share: p.share,
-      settled: p.settled !== undefined ? p.settled : false,
-    }));
-  }
-  if (payload.dueDate !== undefined) {
-    bill.dueDate = payload.dueDate ? dayjs(payload.dueDate).toDate() : null;
-  }
-
+  const participant = bill.participants.find((p) => p.name === req.body.participantName);
+  if (participant) participant.settled = true;
   await bill.save();
+  res.json({ bill });
+};
 
-  res.json({ bill: hydrateStatus(bill) });
-});
-
-export const settleShare = asyncHandler(async (req, res) => {
-  const { participantId } = billSettleSchema.parse(req.body);
-  const bill = await Bill.findById(req.params.id);
-  if (!bill) throw new HttpError(404, 'Bill not found');
-
-  const participant = bill.participants.find((p) => p.userId.toString() === participantId);
-  if (!participant) throw new HttpError(404, 'Participant not part of bill');
-
-  participant.settled = true;
-  await bill.save();
-
-  res.json({ bill: hydrateStatus(bill) });
-});
-
-export const sendReminder = asyncHandler(async (req, res) => {
-  const payload = billReminderSchema.parse(req.body || {});
-  const bill = await Bill.findById(req.params.id).populate('participants.userId');
-  if (!bill) throw new HttpError(404, 'Bill not found');
-
-  const dueSoon = bill.dueDate ? dayjs(bill.dueDate).diff(dayjs(), 'day') <= 3 : false;
-  const message =
-    payload.message ||
-    `Reminder: ${bill.description} (${bill.total.toFixed(2)}) is due ${bill.dueDate ? dayjs(bill.dueDate).format('MMM D') : 'soon'}.`;
-
-  const notifications = bill.participants
-    .filter((p) => !p.settled)
-    .map((p) => ({
-      userId: p.userId._id,
-      type: dueSoon ? 'urgent' : 'reminder',
-      title: 'Bill Reminder',
-      body: message,
-    }));
-
-  if (notifications.length) {
-    await Notification.insertMany(notifications);
-  }
-
-  bill.reminderSent = true;
-  await bill.save();
-
+export const sendReminder = async (req, res) => {
+  await Bill.findByIdAndUpdate(req.params.id, { reminderSent: true });
   res.json({ message: 'Reminder sent' });
-});
+};
 
-export const deleteBill = asyncHandler(async (req, res) => {
-  const bill = await Bill.findById(req.params.id);
-  if (!bill) throw new HttpError(404, 'Bill not found');
-
+export const deleteBill = async (req, res) => {
   await Bill.findByIdAndDelete(req.params.id);
+  res.json({ message: 'Bill deleted' });
+};
 
-  res.json({ message: 'Bill deleted successfully' });
-});
+

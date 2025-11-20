@@ -1,36 +1,38 @@
 .btn {
 	border: none;
-	border-radius: 0.75rem;
-	padding: 0.65rem 1.25rem;
+	border-radius: 4px;
+	padding: 0.5rem 1rem;
 	font-weight: 600;
 	font-size: 0.95rem;
 	display: inline-flex;
 	align-items: center;
 	gap: 0.35rem;
 	cursor: pointer;
-	transition: all 0.2s ease;
 }
 
 .btn--primary {
-	background: linear-gradient(135deg, #f97316, #ea580c);
+	background: var(--primary);
 	color: white;
-	box-shadow: 0 10px 20px rgba(249, 115, 22, 0.3);
+}
+
+.btn--primary:hover {
+	background: var(--primary-dark);
 }
 
 .btn--secondary {
-	background: #111827;
+	background: #333;
 	color: white;
 }
 
 .btn--outline {
 	background: transparent;
-	color: #f97316;
-	border: 1px solid rgba(249, 115, 22, 0.4);
+	color: var(--primary);
+	border: 1px solid var(--primary);
 }
 
 .btn--ghost {
 	background: transparent;
-	color: #6b7280;
+	color: var(--text-secondary);
 }
 
 .btn:disabled {
